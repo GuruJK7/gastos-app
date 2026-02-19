@@ -1,13 +1,1240 @@
-body {
+/* 
+  ═══════════════════════════════════════════════════════════════
+  DASHBOARD MINIMALISTA Y ELEGANTE
+  Diseño limpio, jerarquía visual clara, microinteracciones sutiles
+  ═══════════════════════════════════════════════════════════════
+*/
+
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'Courier New', monospace;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  CONTENEDOR PRINCIPAL - Fondo Simple y Limpio
+  ───────────────────────────────────────────────────────────────
+*/
+
+.App {
+  background: linear-gradient(180deg, #0f172a 0%, #1a1f3a 100%);
+  min-height: 100vh;
+  color: #e2e8f0;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Gradiente de fondo más sutil */
+.App::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 25% 75%, rgba(34, 211, 238, 0.02) 0%, transparent 40%),
+              radial-gradient(circle at 75% 25%, rgba(147, 51, 234, 0.02) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  HEADER - Minimalista
+  ───────────────────────────────────────────────────────────────
+*/
+
+.header-container {
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-content h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+.header-content p {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  CONTENEDOR PRINCIPAL
+  ───────────────────────────────────────────────────────────────
+*/
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  CARDS - Minimalistas y Elegantes
+  ───────────────────────────────────────────────────────────────
+*/
+
+.card {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  border-radius: 0.875rem;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  border-color: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.08);
+  transform: translateY(-2px);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.card-title::before {
+  content: '';
+  width: 3px;
+  height: 20px;
+  background: #22d3ee;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.card:hover .card-title::before {
+  height: 24px;
+  background: #06b6d4;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  FORMULARIO - Limpio y Minimalista
+  ───────────────────────────────────────────────────────────────
+*/
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
+form input,
+form select,
+form textarea {
+  background: rgba(71, 85, 105, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  color: #f1f5f9;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.625rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background-clip: padding-box;
+}
+
+form input::placeholder,
+form select option {
+  color: #64748b;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+  outline: none;
+  border-color: #22d3ee;
+  background: rgba(71, 85, 105, 0.12);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
+}
+
+form input:hover:not(:focus),
+form select:hover:not(:focus) {
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+form textarea {
+  resize: vertical;
+  min-height: 75px;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  BOTONES - Minimalistas con Microinteracciones
+  ───────────────────────────────────────────────────────────────
+*/
+
+.btn-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 0.625rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Botón primario - Minimalista */
+button[type="submit"],
+button.btn-primary {
+  background: #22d3ee;
+  color: #0f172a;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(34, 211, 238, 0.25);
+}
+
+button[type="submit"]:hover,
+button.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(34, 211, 238, 0.35);
+  background: #06b6d4;
+}
+
+button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+/* Microinteracción: ripple sutil en click */
+button[type="submit"]::after,
+button.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+button[type="submit"]:active::after,
+button.btn-primary:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Botón secundario */
+button.btn-secondary {
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  font-weight: 500;
+}
+
+button.btn-secondary:hover {
+  background: rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.15);
+}
+
+/* Botón peligro */
+button.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  font-weight: 500;
+}
+
+button.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+/* Botón neutral */
+button.btn-neutral {
+  background: rgba(71, 85, 105, 0.1);
+  color: #cbd5e1;
+  border: 1px solid rgba(71, 85, 105, 0.2);
+}
+
+button.btn-neutral:hover {
+  background: rgba(71, 85, 105, 0.15);
+  border-color: rgba(71, 85, 105, 0.35);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  MÉTRICAS KPI - Minimalistas
+  ───────────────────────────────────────────────────────────────
+*/
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.metric-card {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  border-radius: 0.875rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(34, 211, 238, 0.1) 50%, transparent 100%);
+  transition: left 0.6s ease;
+}
+
+.metric-card:hover::before {
+  left: 100%;
+}
+
+.metric-card:hover {
+  border-color: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 6px 20px rgba(34, 211, 238, 0.1);
+  transform: translateY(-2px);
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #22d3ee;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover .metric-value {
+  color: #06b6d4;
+}
+
+.metric-card p {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  GRÁFICOS - Contenedores Minimalistas
+  ───────────────────────────────────────────────────────────────
+*/
+
+.chart-container {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  border-radius: 0.875rem;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-container:hover {
+  border-color: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.08);
+  transform: translateY(-2px);
+}
+
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* Estilos para Recharts */
+.recharts-surface {
+  overflow: visible !important;
+}
+
+.recharts-default-tooltip {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(34, 211, 238, 0.2) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+.recharts-tooltip-label {
+  color: #22d3ee !important;
+  font-weight: 500 !important;
+}
+
+.recharts-cartesian-axis-tick {
+  font-size: 0.85rem !important;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  TABLA - Minimalista y Elegante
+  ───────────────────────────────────────────────────────────────
+*/
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0.875rem;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+thead {
+  background: rgba(34, 211, 238, 0.05);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.15);
+  position: sticky;
+  top: 0;
+}
+
+th {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  color: #cbd5e1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  transition: color 0.3s ease;
+}
+
+td {
+  padding: 0.95rem 1.25rem;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.08);
+  transition: all 0.2s ease;
+}
+
+tbody tr {
+  transition: all 0.25s ease;
+}
+
+tbody tr:hover {
+  background: rgba(34, 211, 238, 0.05);
+}
+
+tbody tr:hover td {
+  color: #f1f5f9;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Estilos para valores monetarios */
+.amount {
+  color: #22d3ee;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount.positive {
+  color: #10b981;
+}
+
+.amount.negative {
+  color: #ef4444;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  ANIMACIONES - Sutiles y Elegantes
+  ───────────────────────────────────────────────────────────────
+*/
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.card,
+.metric-card,
+.chart-container {
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.2s; }
+.card:nth-child(4) { animation-delay: 0.3s; }
+
+.metric-card:nth-child(1) { animation-delay: 0.1s; }
+.metric-card:nth-child(2) { animation-delay: 0.2s; }
+.metric-card:nth-child(3) { animation-delay: 0.3s; }
+
+button[type="submit"]:focus-visible,
+button.btn-primary:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  RESPONSIVE DESIGN - OPTIMIZADO PARA MOBILE Y DESKTOP
+  ───────────────────────────────────────────────────────────────
+*/
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLET (768px y menores)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Header adaptativo */
+  .header-container {
+    padding: 1.75rem 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .header-content h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .header-content p {
+    font-size: 0.85rem;
+  }
+
+  /* Dashboard container */
+  .dashboard-container {
+    padding: 0 1.25rem 2.5rem 1.25rem;
+  }
+
+  /* Cards en tablet */
+  .card {
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Formulario en una columna en tablet */
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  /* Métricas en dos columnas en tablet */
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .metric-card {
+    padding: 1.25rem;
+  }
+
+  .metric-value {
+    font-size: 1.6rem;
+  }
+
+  /* Gráficos en tablet */
+  .chart-container {
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  /* Tabla en tablet - scroll horizontal */
+  table {
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    padding: 0.85rem 1rem;
+  }
+
+  /* Botones más compactos */
+  .btn-group {
+    gap: 0.6rem;
+  }
+
+  button {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE GRANDE (600px - 767px)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 767px) and (min-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Gráficos más pequeños en mobile grande */
+  .chart-container {
+    padding: 1.25rem;
+    min-height: 250px;
+  }
+
+  /* Tabla con scroll en mobile */
+  .table-container {
+    border-radius: 0.75rem;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+
+  th, td {
+    padding: 0.75rem 0.9rem;
+  }
+
+  /* Ocular algunas columnas en tabla mobile */
+  th:nth-child(4),
+  td:nth-child(4),
+  th:nth-child(6),
+  td:nth-child(6) {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE PEQUEÑO (menos de 600px)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 599px) {
+  /* Header en mobile */
+  .header-container {
+    padding: 1.5rem 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.08);
+  }
+
+  .header-content h1 {
+    font-size: 1.3rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
+
+  .header-content p {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  /* Dashboard container mobile */
+  .dashboard-container {
+    padding: 0 1rem 2rem 1rem;
+    max-width: 100%;
+  }
+
+  /* Cards en mobile */
+  .card {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-radius: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+  }
+
+  .card-title::before {
+    height: 18px;
+  }
+
+  .card:hover .card-title::before {
+    height: 22px;
+  }
+
+  /* Formulario en mobile - una columna */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .form-group {
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  form input,
+  form select,
+  form textarea {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    border-radius: 0.5rem;
+  }
+
+  /* Inputs con font-size 16px previene zoom en iOS */
+  form input,
+  form select {
+    font-size: 16px !important;
+  }
+
+  form textarea {
+    font-size: 0.88rem;
+    min-height: 70px;
+  }
+
+  /* Métricas en mobile - una columna */
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .metric-card {
+    padding: 1.15rem;
+    border-radius: 0.75rem;
+  }
+
+  .metric-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+  }
+
+  .metric-card p {
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  /* Gráficos en mobile */
+  .chart-container {
+    padding: 1.15rem;
+    margin-bottom: 1.25rem;
+    border-radius: 0.75rem;
+    min-height: 220px;
+  }
+
+  .chart-title {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Recharts - ajustes para mobile */
+  .recharts-surface {
+    max-width: 100%;
+  }
+
+  .recharts-cartesian-axis-tick {
+    font-size: 0.7rem !important;
+  }
+
+  .recharts-legend {
+    font-size: 0.8rem !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Tabla en mobile - optimizada */
+  .table-container {
+    border-radius: 0.75rem;
+    overflow: auto;
+  }
+
+  table {
+    font-size: 0.75rem;
+    width: 100%;
+  }
+
+  thead {
+    background: rgba(34, 211, 238, 0.08);
+  }
+
+  th {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.7rem 0.75rem;
+    word-break: break-word;
+  }
+
+  /* Ocular columnas adicionales en tabla mobile */
+  th:nth-child(n+4),
+  td:nth-child(n+4) {
+    display: none;
+  }
+
+  /* Mostrar solo: Fecha, Monto, Categoría */
+  th:nth-child(-n+3),
+  td:nth-child(-n+3) {
+    display: table-cell;
+  }
+
+  /* Botones en mobile */
+  .btn-group {
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+  }
+
+  button {
+    width: 100%;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.85rem;
+    border-radius: 0.5rem;
+  }
+
+  /* Botón primario touch-friendly */
+  button[type="submit"],
+  button.btn-primary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Estado vacío en mobile */
+  .card:has(h3) {
+    padding: 2rem 1.25rem;
+  }
+
+  .card p:first-of-type {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .card > p:last-of-type {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE EXTRA PEQUEÑO (menos de 380px)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 379px) {
+  .header-container {
+    padding: 1.25rem 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .header-content h1 {
+    font-size: 1.1rem;
+  }
+
+  .header-content p {
+    font-size: 0.7rem;
+  }
+
+  .dashboard-container {
+    padding: 0 0.75rem 1.75rem 0.75rem;
+  }
+
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+  }
+
+  .form-grid {
+    gap: 0.75rem;
+  }
+
+  form input,
+  form select {
+    padding: 0.6rem 0.75rem;
+    font-size: 16px !important;
+  }
+
+  .metrics-grid {
+    gap: 0.9rem;
+  }
+
+  .metric-value {
+    font-size: 1.3rem;
+  }
+
+  .chart-container {
+    padding: 1rem;
+    min-height: 200px;
+  }
+
+  button {
+    padding: 0.65rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  th {
+    padding: 0.6rem 0.6rem;
+    font-size: 0.65rem;
+  }
+
+  td {
+    padding: 0.6rem 0.6rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OPTIMIZACIONES DE ORIENTACIÓN
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .header-container {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .header-content h1 {
+    font-size: 1.25rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .header-content p {
+    display: none;
+  }
+
+  .dashboard-container {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+  }
+
+  .card {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .metric-card {
+    padding: 1rem;
+  }
+
+  .metric-value {
+    font-size: 1.4rem;
+  }
+
+  .chart-container {
+    min-height: 250px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+
+  .btn-group {
+    gap: 0.5rem;
+  }
+
+  button {
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP GRANDE (1200px y mayor)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1200px) {
+  .dashboard-container {
+    max-width: 1300px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .chart-container {
+    min-height: 350px;
+  }
+
+  button {
+    padding: 0.85rem 1.75rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OPTIMIZACIÓN PARA PANTALLAS MUY GRANDES (1600px+)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1600px) {
+  .dashboard-container {
+    max-width: 1400px;
+  }
+
+  .header-content h1 {
+    font-size: 2.25rem;
+  }
+
+  .metrics-grid {
+    gap: 2.5rem;
+  }
+
+  .chart-container {
+    min-height: 400px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEJORAS DE USABILIDAD PARA TOUCH
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Dispositivos touch - aumentar área de toque */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Remover efectos hover en touch */
+  .card:hover,
+  .metric-card:hover,
+  .chart-container:hover {
+    transform: none;
+  }
+
+  /* Mantener efectos de focus para accesibilidad */
+  button:active {
+    opacity: 0.85;
+  }
+
+  form input:focus,
+  form select:focus,
+  form textarea:focus {
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODO OSCURO EN DISPOSITIVOS NOCTURNOS
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+  /* Los estilos ya están optimizados para dark mode */
+}
+
+@media (prefers-color-scheme: light) {
+  /* Fallback para light mode (no se usa, pero disponible) */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEJORA DE ANIMACIONES PARA DISPOSITIVOS CON MENOS PODER
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MEJORA PARA PANTALLAS CON BAJO CONTRASTE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-contrast: more) {
+  .card {
+    border-color: rgba(34, 211, 238, 0.25);
+  }
+
+  button[type="submit"],
+  button.btn-primary {
+    font-weight: 700;
+  }
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  SCROLLBAR - Minimalista
+  ───────────────────────────────────────────────────────────────
+*/
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.3);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.5);
 }

@@ -1,31 +1,21 @@
-.App {
-  text-align: center;
-}
+/* 
+  ═══════════════════════════════════════════════════════════════
+  ESTILOS ESPECÍFICOS DE COMPONENTES - APP.JS
+  Complementa los estilos globales de index.css
+  ═══════════════════════════════════════════════════════════════
+*/
 
+/* Eliminar estilos por defecto de Create React App */
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  display: none;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  display: none;
 }
 
 .App-link {
-  color: #61dafb;
+  display: none;
 }
 
 @keyframes App-logo-spin {
@@ -34,5 +24,69 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  AJUSTES ESPECÍFICOS PARA LAYOUT
+  ───────────────────────────────────────────────────────────────
+*/
+
+/* Asegurar que el body ocupe toda la altura */
+body, html, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+.App {
+  flex: 1;
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  MEJORAS DE ACCESIBILIDAD
+  ───────────────────────────────────────────────────────────────
+*/
+
+/* Focus visible para navegación por teclado */
+*:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* Reducir animaciones para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 
+  ───────────────────────────────────────────────────────────────
+  AJUSTES DE PRINT
+  ───────────────────────────────────────────────────────────────
+*/
+
+@media print {
+  .btn-group,
+  .header-container {
+    display: none;
+  }
+  
+  .card,
+  .chart-container {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
   }
 }

@@ -12,7 +12,8 @@ import {
   Timestamp,
   getDocs,
 } from 'firebase/firestore';
-import { db, auth, authPromise } from '../firebase';
+import { db, auth } from '../firebase';
+import { signInAnonymously } from 'firebase/auth';
 import { useUser } from '@clerk/clerk-react';
 import { CONFIG } from '../config';
 
@@ -29,30 +30,41 @@ export const useGastos = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const clerkUser = useUser();
-  const [authReady, setAuthReady] = useState(!CONFIG.DEV_MODE); // En prod, ya está listo
+  const [authReady, setAuthReady] = useState(false);
   
-  // Esperar a que la autenticación anónima esté lista en modo desarrollo
+  // Inicializar autenticación anónima en modo desarrollo
   useEffect(() => {
     if (CONFIG.DEV_MODE) {
-      authPromise
-        .then(() => {
-          console.log('🔓 Auth promise resuelto - Usuario actual:', auth.currentUser?.uid);
+      console.log('🔐 Iniciando autenticación anónima...');
+      
+      // Si ya hay un usuario autenticado, no hacer nada
+      if (auth.currentUser) {
+        console.log('✅ Usuario ya autenticado:', auth.currentUser.uid);
+        setAuthReady(true);
+        return;
+      }
+
+      signInAnonymously(auth)
+        .then((userCredential) => {
+          console.log('✅ Autenticación anónima exitosa - UID:', userCredential.user.uid);
           setAuthReady(true);
         })
-        .catch((err) => {
-          console.error('❌ Error esperando auth promise:', err);
-          setError('Error de autenticación');
+        .catch((error) => {
+          console.error('❌ Error en autenticación anónima:', error.code, error.message);
+          setError('Error de autenticación: ' + error.message);
           setLoading(false);
         });
+    } else {
+      // En producción, consideramos que está listo cuando Clerk está listo
+      setAuthReady(clerkUser.isLoaded);
     }
-  }, []);
+  }, [clerkUser.isLoaded]);
   
   // En modo desarrollo, usar Firebase auth anónimo; en producción, usar Clerk
   const user = useMemo(() => {
     if (CONFIG.DEV_MODE) {
       const currentUser = auth.currentUser;
       if (!currentUser) {
-        console.warn('⚠️ No hay usuario autenticado en Firebase');
         return null;
       }
       return {
@@ -64,24 +76,16 @@ export const useGastos = () => {
     return clerkUser.user;
   }, [clerkUser.user]);
   
-  const isLoaded = authReady && (CONFIG.DEV_MODE ? !!auth.currentUser : clerkUser.isLoaded);
+  const isLoaded = CONFIG.DEV_MODE ? authReady : clerkUser.isLoaded;
 
   // Sincronizar gastos con Firestore cuando usuario esté autenticado
   useEffect(() => {
-    if (!isLoaded) {
-      console.log('⏳ Esperando autenticación... isLoaded:', isLoaded, 'user:', user);
+    if (!isLoaded || !user) {
+      console.log('⏳ Esperando autenticación... isLoaded:', isLoaded, 'user:', user?.id);
       return; // Esperar a que se autentique
     }
 
-    if (!user) {
-      console.error('❌ No hay usuario disponible');
-      setLoading(false);
-      setError('No hay usuario autenticado');
-      return;
-    }
-
     console.log('🔄 Sincronizando gastos para usuario:', user.id);
-    // Sincronizar con Firestore
     setLoading(true);
     setError(null);
     
@@ -97,13 +101,11 @@ export const useGastos = () => {
         const gastosData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          // Convertir Timestamp de Firestore a string
           fecha: doc.data().fecha instanceof Timestamp
             ? doc.data().fecha.toDate().toISOString().split('T')[0]
             : doc.data().fecha,
         }));
         
-        // Ordenar en el cliente
         gastosData.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         
         setGastos(gastosData);
@@ -116,9 +118,8 @@ export const useGastos = () => {
         console.error('📝 Mensaje:', err.message);
         console.error('🔐 Auth currentUser:', auth.currentUser?.uid);
         
-        // Si es un error de permisos, mostrar mensaje más específico
         if (err.code === 'permission-denied') {
-          setError('Sin permisos para acceder a los gastos. Verifica las reglas de Firestore y que estés autenticado.');
+          setError('Sin permisos para acceder a los gastos. Verifica las reglas de Firestore.');
         } else if (err.code === 'failed-precondition') {
           setError('Firestore no está configurado correctamente. Verifica las reglas.');
         } else {

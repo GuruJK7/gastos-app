@@ -13,11 +13,13 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from '@clerk/clerk-react';
+import { CONFIG } from '../config';
 
 /**
  * ═══════════════════════════════════════════════════════════════
  * HOOK: useGastos
  * Maneja la sincronización de gastos entre Firestore y Clerk Auth
+ * En modo desarrollo, simula un usuario autenticado
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -25,7 +27,11 @@ export const useGastos = () => {
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user, isLoaded } = useUser();
+  const clerkUser = useUser();
+  
+  // En modo desarrollo, usar usuario mock; en producción, usar Clerk
+  const user = CONFIG.DEV_MODE ? CONFIG.DEV_USER : clerkUser.user;
+  const isLoaded = CONFIG.DEV_MODE ? true : clerkUser.isLoaded;
 
   // Sincronizar gastos con Firestore cuando usuario esté autenticado
   useEffect(() => {

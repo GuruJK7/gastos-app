@@ -1,5 +1,6 @@
 // firestore.rules
 // Reglas de seguridad para Firestore
+// Configurado para trabajar con Clerk Authentication
 // Copia esto en Firebase Console → Firestore → Rules
 
 rules_version = '2';
@@ -7,40 +8,30 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // Colección: gastos
-    // Solo usuarios autenticados pueden leer/escribir sus propios gastos
+    // Permitir lectura y escritura si el usuario está autenticado
     match /gastos/{document=**} {
-      // Permitir lectura solo si el userId del documento coincide con el usuario autenticado
-      allow read: if request.auth != null && 
-                     resource.data.userId == request.auth.uid;
+      // Permitir lectura si hay un token autenticado
+      allow read: if request.auth != null;
       
-      // Permitir crear solo si el userId que envía coincide con su uid
-      allow create: if request.auth != null && 
-                       request.resource.data.userId == request.auth.uid &&
+      // Permitir crear si hay un token autenticado
+      allow create: if request.auth != null &&
                        request.resource.data.monto > 0 &&
                        request.resource.data.fecha != null &&
                        request.resource.data.categoria != null &&
-                       request.resource.data.metodoPago != null;
+                       request.resource.data.metodoPago != null &&
+                       request.resource.data.userId != null;
       
-      // Permitir actualizar solo si es propietario
-      allow update: if request.auth != null && 
-                       resource.data.userId == request.auth.uid &&
-                       request.resource.data.userId == request.auth.uid &&
+      // Permitir actualizar si hay un token autenticado
+      allow update: if request.auth != null &&
                        request.resource.data.monto > 0;
       
-      // Permitir eliminar solo si es propietario
-      allow delete: if request.auth != null && 
-                       resource.data.userId == request.auth.uid;
+      // Permitir eliminar si hay un token autenticado
+      allow delete: if request.auth != null;
     }
     
-    // Colección: usuarios (opcional, para almacenar perfiles)
+    // Colección: usuarios
     match /usuarios/{userId} {
-      // Usuario solo puede leer su propio perfil
-      allow read: if request.auth != null && 
-                     request.auth.uid == userId;
-      
-      // Usuario solo puede crear/actualizar su propio perfil
-      allow write: if request.auth != null && 
-                      request.auth.uid == userId;
+      allow read, write: if request.auth != null;
     }
     
     // Denegar acceso a cualquier otra colección

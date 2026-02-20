@@ -7,9 +7,10 @@ import {
 import { CSVLink } from 'react-csv';
 import { useGastos } from './hooks/useGastos';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { CONFIG } from './config';
 
 function App() {
-  const { gastos, loading, error, addGasto, clearAllGastos } = useGastos();
+  const { gastos, loading, error, addGasto, clearAllGastos, user } = useGastos();
   const [newGasto, setNewGasto] = useState({
     fecha: new Date().toISOString().split('T')[0],
     monto: '',
@@ -140,14 +141,37 @@ function App() {
           <div>
             <h1>💰 Gestor de Gastos Premium</h1>
             <p>Dashboard financiero inteligente | Sigue tus gastos en tiempo real</p>
+            {CONFIG.DEV_MODE && (
+              <p style={{ fontSize: '0.85rem', color: '#a78bfa', marginTop: '0.5rem' }}>
+                🔧 Modo desarrollo activado - Usuario: {user?.firstName || user?.id}
+              </p>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <SignedOut>
-              <SignInButton mode="modal" />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+            {CONFIG.DEV_MODE ? (
+              // En modo desarrollo, mostrar usuario mock sin opciones de Clerk
+              <div style={{
+                padding: '0.75rem 1.5rem',
+                background: 'rgba(167, 139, 250, 0.1)',
+                border: '1px solid rgba(167, 139, 250, 0.3)',
+                borderRadius: '0.5rem',
+                color: '#a78bfa',
+                fontSize: '0.9rem',
+                fontWeight: '500'
+              }}>
+                ✅ Admin conectado
+              </div>
+            ) : (
+              // En producción, usar Clerk
+              <>
+                <SignedOut>
+                  <SignInButton mode="modal" />
+                </SignedOut>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+              </>
+            )}
           </div>
         </div>
       </header>

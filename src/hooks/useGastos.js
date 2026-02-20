@@ -1,5 +1,5 @@
 // src/hooks/useGastos.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   collection,
   addDoc,
@@ -10,8 +10,9 @@ import {
   doc,
   updateDoc,
   Timestamp,
+  getDocs,
 } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { useUser } from '@clerk/clerk-react';
 import { CONFIG } from '../config';
 
@@ -19,7 +20,7 @@ import { CONFIG } from '../config';
  * ═══════════════════════════════════════════════════════════════
  * HOOK: useGastos
  * Maneja la sincronización de gastos entre Firestore y Clerk Auth
- * En modo desarrollo, simula un usuario autenticado
+ * En modo desarrollo, usa autenticación anónima de Firebase
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -29,39 +30,34 @@ export const useGastos = () => {
   const [error, setError] = useState(null);
   const clerkUser = useUser();
   
-  // En modo desarrollo, usar usuario mock; en producción, usar Clerk
-  const user = CONFIG.DEV_MODE ? CONFIG.DEV_USER : clerkUser.user;
-  const isLoaded = CONFIG.DEV_MODE ? true : clerkUser.isLoaded;
+  // En modo desarrollo, usar Firebase auth anónimo; en producción, usar Clerk
+  const user = useMemo(() => {
+    return CONFIG.DEV_MODE 
+      ? { id: auth.currentUser?.uid || 'dev_user', firstName: 'Admin', email: 'dev@test.local' }
+      : clerkUser.user;
+  }, [clerkUser.user]);
+  
+  const isLoaded = CONFIG.DEV_MODE ? !!auth.currentUser : clerkUser.isLoaded;
 
   // Sincronizar gastos con Firestore cuando usuario esté autenticado
   useEffect(() => {
     if (!isLoaded) {
-      return; // Esperar a que Clerk cargue el usuario
+      return; // Esperar a que se autentique
     }
 
     if (!user) {
-      // Si no hay usuario, cargar del localStorage
-      try {
-        const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
-        setGastos(storedGastos);
-        setLoading(false);
-        setError(null);
-      } catch (err) {
-        console.error('Error cargando gastos del localStorage:', err);
-        setError('Error al cargar los gastos');
-        setLoading(false);
-      }
+      setLoading(false);
+      setError('No hay usuario autenticado');
       return;
     }
 
-    // Si hay usuario, sincronizar con Firestore
+    // Sincronizar con Firestore
     setLoading(true);
-    setError(null); // Limpiar error anterior
+    setError(null);
     
     const q = query(
       collection(db, 'gastos'),
       where('userId', '==', user.id)
-      // Removemos orderBy para evitar problemas de índices
     );
 
     const unsubscribe = onSnapshot(
@@ -76,7 +72,7 @@ export const useGastos = () => {
             : doc.data().fecha,
         }));
         
-        // Ordenar en el cliente (más seguro que en Firestore para nuevos usuarios)
+        // Ordenar en el cliente
         gastosData.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         
         setGastos(gastosData);
@@ -94,7 +90,6 @@ export const useGastos = () => {
         } else if (err.code === 'failed-precondition') {
           setError('Firestore no está configurado correctamente. Verifica las reglas.');
         } else {
-          // Por ahora, no mostrar error si es la primera vez (tabla vacía es normal)
           setError(null);
         }
         setLoading(false);
@@ -109,28 +104,22 @@ export const useGastos = () => {
    */
   const addGasto = async (nuevoGasto) => {
     try {
-      if (user) {
-        // Agregar a Firestore con el userId de Clerk
-        const docRef = await addDoc(collection(db, 'gastos'), {
-          ...nuevoGasto,
-          userId: user.id,
-          userEmail: user.emailAddresses[0]?.emailAddress,
-          fecha: new Date(nuevoGasto.fecha),
-          monto: parseFloat(nuevoGasto.monto),
-          createdAt: Timestamp.now(),
-        });
-        return { id: docRef.id, ...nuevoGasto };
-      } else {
-        // Agregar a localStorage (modo anónimo)
-        const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
-        const gastoConId = { ...nuevoGasto, id: Date.now().toString() };
-        storedGastos.push(gastoConId);
-        localStorage.setItem('gastos', JSON.stringify(storedGastos));
-        return gastoConId;
+      if (!user) {
+        throw new Error('Usuario no autenticado');
       }
+
+      const docRef = await addDoc(collection(db, 'gastos'), {
+        ...nuevoGasto,
+        userId: user.id,
+        userEmail: user.email || 'dev@test.local',
+        fecha: new Date(nuevoGasto.fecha),
+        monto: parseFloat(nuevoGasto.monto),
+        createdAt: Timestamp.now(),
+      });
+      
+      return { id: docRef.id, ...nuevoGasto };
     } catch (err) {
       console.error('Error agregando gasto:', err);
-      setError('Error al agregar el gasto');
       throw err;
     }
   };
@@ -140,19 +129,13 @@ export const useGastos = () => {
    */
   const deleteGasto = async (gastoId) => {
     try {
-      if (user) {
-        // Eliminar de Firestore
-        await deleteDoc(doc(db, 'gastos', gastoId));
-      } else {
-        // Eliminar de localStorage
-        const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
-        const filtrados = storedGastos.filter((g) => g.id !== gastoId);
-        localStorage.setItem('gastos', JSON.stringify(filtrados));
-        setGastos(filtrados);
+      if (!user) {
+        throw new Error('Usuario no autenticado');
       }
+      
+      await deleteDoc(doc(db, 'gastos', gastoId));
     } catch (err) {
       console.error('Error eliminando gasto:', err);
-      setError('Error al eliminar el gasto');
       throw err;
     }
   };
@@ -162,29 +145,21 @@ export const useGastos = () => {
    */
   const updateGasto = async (gastoId, datosActualizados) => {
     try {
-      if (user) {
-        // Actualizar en Firestore
-        const gastoRef = doc(db, 'gastos', gastoId);
-        await updateDoc(gastoRef, {
-          ...datosActualizados,
-          fecha: datosActualizados.fecha instanceof Date
-            ? datosActualizados.fecha
-            : new Date(datosActualizados.fecha),
-          monto: parseFloat(datosActualizados.monto),
-          updatedAt: Timestamp.now(),
-        });
-      } else {
-        // Actualizar en localStorage
-        const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
-        const actualizados = storedGastos.map((g) =>
-          g.id === gastoId ? { ...g, ...datosActualizados } : g
-        );
-        localStorage.setItem('gastos', JSON.stringify(actualizados));
-        setGastos(actualizados);
+      if (!user) {
+        throw new Error('Usuario no autenticado');
       }
+
+      const gastoRef = doc(db, 'gastos', gastoId);
+      await updateDoc(gastoRef, {
+        ...datosActualizados,
+        fecha: datosActualizados.fecha instanceof Date
+          ? datosActualizados.fecha
+          : new Date(datosActualizados.fecha),
+        monto: parseFloat(datosActualizados.monto),
+        updatedAt: Timestamp.now(),
+      });
     } catch (err) {
       console.error('Error actualizando gasto:', err);
-      setError('Error al actualizar el gasto');
       throw err;
     }
   };
@@ -194,18 +169,21 @@ export const useGastos = () => {
    */
   const clearAllGastos = async () => {
     try {
-      if (user) {
-        // En Firestore, habría que eliminar cada documento
-        // Por ahora retornamos un aviso
-        throw new Error('Función no disponible con Firestore. Elimina gastos uno por uno.');
-      } else {
-        // Limpiar localStorage
-        localStorage.removeItem('gastos');
-        setGastos([]);
+      if (!user) {
+        throw new Error('Usuario no autenticado');
       }
+
+      // Obtener todos los gastos del usuario
+      const q = query(collection(db, 'gastos'), where('userId', '==', user.id));
+      const snapshot = await getDocs(q);
+      
+      // Eliminar cada documento
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+      
+      setGastos([]);
     } catch (err) {
       console.error('Error limpiando gastos:', err);
-      setError('Error al limpiar los gastos');
       throw err;
     }
   };

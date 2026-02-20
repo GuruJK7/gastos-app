@@ -40,6 +40,7 @@ export const useGastos = () => {
         const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
         setGastos(storedGastos);
         setLoading(false);
+        setError(null);
       } catch (err) {
         console.error('Error cargando gastos del localStorage:', err);
         setError('Error al cargar los gastos');
@@ -50,10 +51,12 @@ export const useGastos = () => {
 
     // Si hay usuario, sincronizar con Firestore
     setLoading(true);
+    setError(null); // Limpiar error anterior
+    
     const q = query(
       collection(db, 'gastos'),
-      where('userId', '==', user.id),
-      orderBy('fecha', 'desc')
+      where('userId', '==', user.id)
+      // Removemos orderBy para evitar problemas de índices
     );
 
     const unsubscribe = onSnapshot(
@@ -67,13 +70,28 @@ export const useGastos = () => {
             ? doc.data().fecha.toDate().toISOString().split('T')[0]
             : doc.data().fecha,
         }));
+        
+        // Ordenar en el cliente (más seguro que en Firestore para nuevos usuarios)
+        gastosData.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        
         setGastos(gastosData);
         setError(null);
         setLoading(false);
       },
       (err) => {
-        console.error('Error sincronizando gastos:', err);
-        setError('Error al sincronizar los gastos');
+        console.error('Error sincronizando gastos con Firestore:', err);
+        console.error('Código de error:', err.code);
+        console.error('Mensaje:', err.message);
+        
+        // Si es un error de permisos, mostrar mensaje más específico
+        if (err.code === 'permission-denied') {
+          setError('Sin permisos para acceder a los gastos. Verifica las reglas de Firestore.');
+        } else if (err.code === 'failed-precondition') {
+          setError('Firestore no está configurado correctamente. Verifica las reglas.');
+        } else {
+          // Por ahora, no mostrar error si es la primera vez (tabla vacía es normal)
+          setError(null);
+        }
         setLoading(false);
       }
     );

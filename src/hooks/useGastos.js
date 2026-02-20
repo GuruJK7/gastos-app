@@ -44,14 +44,32 @@ export const useGastos = () => {
         return;
       }
 
+      // Timeout de seguridad de 5 segundos
+      const timeoutId = setTimeout(() => {
+        console.warn('⏱️ Timeout en autenticación anónima (5s) - continuando de todas formas');
+        setAuthReady(true);
+      }, 5000);
+
       signInAnonymously(auth)
         .then((userCredential) => {
+          clearTimeout(timeoutId);
           console.log('✅ Autenticación anónima exitosa - UID:', userCredential.user.uid);
           setAuthReady(true);
         })
         .catch((error) => {
+          clearTimeout(timeoutId);
           console.error('❌ Error en autenticación anónima:', error.code, error.message);
-          setError('Error de autenticación: ' + error.message);
+          
+          // Si es auth/operation-not-allowed, significa que no está habilitada
+          if (error.code === 'auth/operation-not-allowed') {
+            console.error('⚠️ IMPORTANTE: Habilita la autenticación anónima en Firebase Console');
+            setError('Autenticación anónima no habilitada en Firebase Console');
+          } else {
+            setError('Error de autenticación: ' + error.message);
+          }
+          
+          // De todas formas, continuar para que la UI no se quede congelada
+          setAuthReady(true);
           setLoading(false);
         });
     } else {

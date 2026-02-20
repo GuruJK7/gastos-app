@@ -6,13 +6,10 @@ import {
 } from 'recharts';
 import { CSVLink } from 'react-csv';
 import { useGastos } from './hooks/useGastos';
-import { useAuth } from './contexts/AuthContext';
-import { AuthModal } from './components/AuthModal';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 function App() {
-  const { gastos, loading, error, user, addGasto, clearAllGastos } = useGastos();
-  const { logout } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { gastos, loading, error, addGasto, clearAllGastos } = useGastos();
   const [newGasto, setNewGasto] = useState({
     fecha: new Date().toISOString().split('T')[0],
     monto: '',
@@ -22,13 +19,6 @@ function App() {
     descripcion: ''
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
-
-  // Mostrar modal si no hay usuario y no está cargando
-  useEffect(() => {
-    if (!loading && !user) {
-      setShowAuthModal(true);
-    }
-  }, [user, loading]);
 
   // Detectar cambios de tamaño de pantalla
   useEffect(() => {
@@ -150,32 +140,15 @@ function App() {
           <div>
             <h1>💰 Gestor de Gastos Premium</h1>
             <p>Dashboard financiero inteligente | Sigue tus gastos en tiempo real</p>
-            {user && <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>👤 {user.email}</p>}
           </div>
-          {user && (
-            <button 
-              onClick={logout}
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                color: '#ef4444',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                padding: '0.6rem 1rem',
-                borderRadius: '0.5rem',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500,
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(239, 68, 68, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(239, 68, 68, 0.1)';
-              }}
-            >
-              🚪 Cerrar Sesión
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <SignedOut>
+              <SignInButton mode="modal" />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
         </div>
       </header>
 
@@ -489,14 +462,6 @@ function App() {
         )}
 
       </main>
-
-      {/* ════════════════════════════════════════════════════════════
-          MODAL DE AUTENTICACIÓN
-          ════════════════════════════════════════════════════════════ */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
     </div>
   );
 }

@@ -12,12 +12,13 @@ import {
   updateDoc,
   Timestamp,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
+import { useUser } from '@clerk/clerk-react';
 
 /**
  * ═══════════════════════════════════════════════════════════════
  * HOOK: useGastos
- * Maneja la sincronización de gastos entre Firestore y localStorage
+ * Maneja la sincronización de gastos entre Firestore y Clerk Auth
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -25,28 +26,24 @@ export const useGastos = () => {
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
+  const { user, isLoaded } = useUser();
 
-  // Detectar usuario actual
+  // Sincronizar gastos con Firestore cuando usuario esté autenticado
   useEffect(() => {
-    const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+    if (!isLoaded) {
+      return; // Esperar a que Clerk cargue el usuario
+    }
 
-    return () => unsubscribeAuth();
-  }, []);
-
-  // Sincronizar gastos con Firestore (cuando usuario esté autenticado)
-  useEffect(() => {
     if (!user) {
       // Si no hay usuario, cargar del localStorage
       try {
         const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
         setGastos(storedGastos);
+        setLoading(false);
       } catch (err) {
         console.error('Error cargando gastos del localStorage:', err);
         setError('Error al cargar los gastos');
+        setLoading(false);
       }
       return;
     }
@@ -55,7 +52,7 @@ export const useGastos = () => {
     setLoading(true);
     const q = query(
       collection(db, 'gastos'),
-      where('userId', '==', user.uid),
+      where('userId', '==', user.id),
       orderBy('fecha', 'desc')
     );
 
@@ -71,6 +68,7 @@ export const useGastos = () => {
             : doc.data().fecha,
         }));
         setGastos(gastosData);
+        setError(null);
         setLoading(false);
       },
       (err) => {
@@ -81,7 +79,7 @@ export const useGastos = () => {
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, isLoaded]);
 
   /**
    * Agregar un nuevo gasto
@@ -89,17 +87,18 @@ export const useGastos = () => {
   const addGasto = async (nuevoGasto) => {
     try {
       if (user) {
-        // Agregar a Firestore
+        // Agregar a Firestore con el userId de Clerk
         const docRef = await addDoc(collection(db, 'gastos'), {
           ...nuevoGasto,
-          userId: user.uid,
+          userId: user.id,
+          userEmail: user.emailAddresses[0]?.emailAddress,
           fecha: new Date(nuevoGasto.fecha),
           monto: parseFloat(nuevoGasto.monto),
           createdAt: Timestamp.now(),
         });
         return { id: docRef.id, ...nuevoGasto };
       } else {
-        // Agregar a localStorage
+        // Agregar a localStorage (modo anónimo)
         const storedGastos = JSON.parse(localStorage.getItem('gastos')) || [];
         const gastoConId = { ...nuevoGasto, id: Date.now().toString() };
         storedGastos.push(gastoConId);

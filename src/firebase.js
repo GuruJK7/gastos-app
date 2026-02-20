@@ -46,12 +46,18 @@ export { analytics };
 /**
  * En modo desarrollo, autenticarse anónimamente
  */
+let authPromise = Promise.resolve();
+
 if (CONFIG.DEV_MODE) {
-  signInAnonymously(auth)
-    .then(() => {
-      console.log('✅ Autenticación anónima activada para desarrollo');
+  authPromise = signInAnonymously(auth)
+    .then((userCredential) => {
+      console.log('✅ Autenticación anónima exitosa - UID:', userCredential.user.uid);
+      return userCredential.user;
     })
     .catch((error) => {
-      console.error('⚠️ Error en autenticación anónima:', error.message);
+      console.error('⚠️ Error en autenticación anónima:', error.code, error.message);
+      throw error;
     });
 }
+
+export { authPromise };

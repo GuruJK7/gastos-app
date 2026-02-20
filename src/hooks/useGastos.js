@@ -12,7 +12,7 @@ import {
   Timestamp,
   getDocs,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db, auth, authPromise } from '../firebase';
 import { useUser } from '@clerk/clerk-react';
 import { CONFIG } from '../config';
 
@@ -29,28 +29,58 @@ export const useGastos = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const clerkUser = useUser();
+  const [authReady, setAuthReady] = useState(!CONFIG.DEV_MODE); // En prod, ya está listo
+  
+  // Esperar a que la autenticación anónima esté lista en modo desarrollo
+  useEffect(() => {
+    if (CONFIG.DEV_MODE) {
+      authPromise
+        .then(() => {
+          console.log('🔓 Auth promise resuelto - Usuario actual:', auth.currentUser?.uid);
+          setAuthReady(true);
+        })
+        .catch((err) => {
+          console.error('❌ Error esperando auth promise:', err);
+          setError('Error de autenticación');
+          setLoading(false);
+        });
+    }
+  }, []);
   
   // En modo desarrollo, usar Firebase auth anónimo; en producción, usar Clerk
   const user = useMemo(() => {
-    return CONFIG.DEV_MODE 
-      ? { id: auth.currentUser?.uid || 'dev_user', firstName: 'Admin', email: 'dev@test.local' }
-      : clerkUser.user;
+    if (CONFIG.DEV_MODE) {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        console.warn('⚠️ No hay usuario autenticado en Firebase');
+        return null;
+      }
+      return {
+        id: currentUser.uid,
+        firstName: 'Admin',
+        email: 'dev@test.local'
+      };
+    }
+    return clerkUser.user;
   }, [clerkUser.user]);
   
-  const isLoaded = CONFIG.DEV_MODE ? !!auth.currentUser : clerkUser.isLoaded;
+  const isLoaded = authReady && (CONFIG.DEV_MODE ? !!auth.currentUser : clerkUser.isLoaded);
 
   // Sincronizar gastos con Firestore cuando usuario esté autenticado
   useEffect(() => {
     if (!isLoaded) {
+      console.log('⏳ Esperando autenticación... isLoaded:', isLoaded, 'user:', user);
       return; // Esperar a que se autentique
     }
 
     if (!user) {
+      console.error('❌ No hay usuario disponible');
       setLoading(false);
       setError('No hay usuario autenticado');
       return;
     }
 
+    console.log('🔄 Sincronizando gastos para usuario:', user.id);
     // Sincronizar con Firestore
     setLoading(true);
     setError(null);
@@ -63,6 +93,7 @@ export const useGastos = () => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        console.log('✅ Snapshot recibido:', snapshot.docs.length, 'gastos');
         const gastosData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -80,13 +111,14 @@ export const useGastos = () => {
         setLoading(false);
       },
       (err) => {
-        console.error('Error sincronizando gastos con Firestore:', err);
-        console.error('Código de error:', err.code);
-        console.error('Mensaje:', err.message);
+        console.error('❌ Error sincronizando gastos con Firestore:', err);
+        console.error('📌 Código de error:', err.code);
+        console.error('📝 Mensaje:', err.message);
+        console.error('🔐 Auth currentUser:', auth.currentUser?.uid);
         
         // Si es un error de permisos, mostrar mensaje más específico
         if (err.code === 'permission-denied') {
-          setError('Sin permisos para acceder a los gastos. Verifica las reglas de Firestore.');
+          setError('Sin permisos para acceder a los gastos. Verifica las reglas de Firestore y que estés autenticado.');
         } else if (err.code === 'failed-precondition') {
           setError('Firestore no está configurado correctamente. Verifica las reglas.');
         } else {
@@ -108,6 +140,7 @@ export const useGastos = () => {
         throw new Error('Usuario no autenticado');
       }
 
+      console.log('➕ Agregando gasto para usuario:', user.id);
       const docRef = await addDoc(collection(db, 'gastos'), {
         ...nuevoGasto,
         userId: user.id,
@@ -117,9 +150,10 @@ export const useGastos = () => {
         createdAt: Timestamp.now(),
       });
       
+      console.log('✅ Gasto agregado con ID:', docRef.id);
       return { id: docRef.id, ...nuevoGasto };
     } catch (err) {
-      console.error('Error agregando gasto:', err);
+      console.error('❌ Error agregando gasto:', err);
       throw err;
     }
   };

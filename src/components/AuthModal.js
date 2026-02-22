@@ -1,262 +1,240 @@
 // src/components/AuthModal.js
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import './AuthModal.css';
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * COMPONENTE: AuthModal
- * Modal para login y registro de usuarios
- * ═══════════════════════════════════════════════════════════════
- */
+export const AuthModal = () => {
+  const { 
+    login, 
+    register, 
+    loginWithGoogle, 
+    resetPassword, 
+    loading, 
+    error: authError 
+  } = useAuth();
 
-export const AuthModal = ({ isOpen, onClose }) => {
-  const { login, signup, error } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState('login'); // 'login', 'register', 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [localError, setLocalError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [error, setError] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setLocalError('');
-    setLoading(true);
-
+    setError('');
     try {
-      if (isLogin) {
-        await login(email, password);
-      } else {
-        await signup(email, password);
-      }
-      // Cerrar modal al éxito
-      setEmail('');
-      setPassword('');
-      onClose();
+      await login(email, password);
     } catch (err) {
-      setLocalError(err.message || 'Error de autenticación');
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Error al iniciar sesión');
     }
   };
 
-  if (!isOpen) return null;
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    try {
+      await register(email, password, displayName);
+    } catch (err) {
+      setError(err.message || 'Error al crear cuenta');
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email) {
+      setError('Por favor ingresa tu correo electrónico');
+      return;
+    }
+
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+      setTimeout(() => {
+        setResetSent(false);
+        setMode('login');
+        setEmail('');
+      }, 3000);
+    } catch (err) {
+      setError(err.message || 'Error al enviar correo de recuperación');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      setError(err.message || 'Error al iniciar con Google');
+    }
+  };
+
+  const displayError = error || authError;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.7)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '1rem'
-    }}>
-      <div style={{
-        background: 'linear-gradient(180deg, #0f172a 0%, #1a1f3a 100%)',
-        border: '1px solid rgba(34, 211, 238, 0.2)',
-        borderRadius: '1rem',
-        padding: '2rem',
-        maxWidth: '400px',
-        width: '100%',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)'
-      }}>
-        {/* Título */}
-        <h2 style={{
-          color: '#f1f5f9',
-          marginBottom: '1.5rem',
-          fontSize: '1.5rem',
-          fontWeight: 600
-        }}>
-          {isLogin ? '🔐 Iniciar Sesión' : '📝 Registrarse'}
-        </h2>
+    <div className="auth-modal-container">
+      <div className="auth-modal">
+        <h1 className="auth-title">
+          {mode === 'login' && 'Iniciar Sesión'}
+          {mode === 'register' && 'Crear Cuenta'}
+          {mode === 'reset' && 'Recuperar Contraseña'}
+        </h1>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Email */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              color: '#cbd5e1',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em'
-            }}>
-              Email
-            </label>
+        {displayError && (
+          <div className="auth-error">
+            {displayError}
+          </div>
+        )}
+
+        {resetSent && (
+          <div className="auth-success">
+            ✓ Correo de recuperación enviado. Revisa tu bandeja de entrada.
+          </div>
+        )}
+
+        {mode === 'login' && (
+          <form onSubmit={handleLogin} className="auth-form">
             <input
               type="email"
+              placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
               required
-              style={{
-                background: 'rgba(71, 85, 105, 0.08)',
-                border: '1px solid rgba(34, 211, 238, 0.15)',
-                color: '#f1f5f9',
-                padding: '0.75rem 0.95rem',
-                borderRadius: '0.625rem',
-                fontSize: '0.9rem',
-                fontFamily: 'inherit',
-                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#22d3ee';
-                e.target.style.background = 'rgba(71, 85, 105, 0.12)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(34, 211, 238, 0.08)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(34, 211, 238, 0.15)';
-                e.target.style.background = 'rgba(71, 85, 105, 0.08)';
-                e.target.style.boxShadow = 'none';
-              }}
+              className="auth-input"
             />
-          </div>
-
-          {/* Contraseña */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              color: '#cbd5e1',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em'
-            }}>
-              Contraseña
-            </label>
             <input
               type="password"
+              placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
               required
-              minLength={6}
-              style={{
-                background: 'rgba(71, 85, 105, 0.08)',
-                border: '1px solid rgba(34, 211, 238, 0.15)',
-                color: '#f1f5f9',
-                padding: '0.75rem 0.95rem',
-                borderRadius: '0.625rem',
-                fontSize: '0.9rem',
-                fontFamily: 'inherit',
-                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#22d3ee';
-                e.target.style.background = 'rgba(71, 85, 105, 0.12)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(34, 211, 238, 0.08)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(34, 211, 238, 0.15)';
-                e.target.style.background = 'rgba(71, 85, 105, 0.08)';
-                e.target.style.boxShadow = 'none';
-              }}
+              className="auth-input"
             />
-          </div>
+            <button type="submit" disabled={loading} className="auth-button">
+              {loading ? 'Cargando...' : 'Iniciar Sesión'}
+            </button>
+          </form>
+        )}
 
-          {/* Mensajes de error */}
-          {(localError || error) && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#ef4444',
-              padding: '0.75rem',
-              borderRadius: '0.5rem',
-              fontSize: '0.85rem'
-            }}>
-              ⚠️ {localError || error}
-            </div>
+        {mode === 'register' && (
+          <form onSubmit={handleRegister} className="auth-form">
+            <input
+              type="text"
+              placeholder="Nombre completo"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              className="auth-input"
+            />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="auth-input"
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="auth-input"
+            />
+            <input
+              type="password"
+              placeholder="Confirmar contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="auth-input"
+            />
+            <button type="submit" disabled={loading} className="auth-button">
+              {loading ? 'Cargando...' : 'Crear Cuenta'}
+            </button>
+          </form>
+        )}
+
+        {mode === 'reset' && (
+          <form onSubmit={handleResetPassword} className="auth-form">
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="auth-input"
+            />
+            <button type="submit" disabled={loading} className="auth-button">
+              {loading ? 'Enviando...' : 'Enviar Correo de Recuperación'}
+            </button>
+          </form>
+        )}
+
+        <div className="auth-divider">O</div>
+
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="auth-google-button"
+        >
+          🔐 Iniciar con Google
+        </button>
+
+        <div className="auth-links">
+          {mode === 'login' && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('register');
+                  setError('');
+                }}
+                className="auth-link"
+              >
+                ¿No tienes cuenta? Registrate
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('reset');
+                  setError('');
+                }}
+                className="auth-link"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </>
           )}
 
-          {/* Botón submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              background: '#22d3ee',
-              color: '#0f172a',
-              border: 'none',
-              padding: '0.8rem 1.5rem',
-              borderRadius: '0.625rem',
-              fontSize: '0.9rem',
-              fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.35s ease',
-              opacity: loading ? 0.7 : 1,
-              boxShadow: '0 2px 8px rgba(34, 211, 238, 0.25)'
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.target.style.background = '#06b6d4';
-                e.target.style.boxShadow = '0 6px 16px rgba(34, 211, 238, 0.35)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) {
-                e.target.style.background = '#22d3ee';
-                e.target.style.boxShadow = '0 2px 8px rgba(34, 211, 238, 0.25)';
-              }
-            }}
-          >
-            {loading ? '⏳ Cargando...' : (isLogin ? '✓ Iniciar Sesión' : '✓ Registrarse')}
-          </button>
-
-          {/* Cambiar entre login y signup */}
-          <p style={{
-            textAlign: 'center',
-            color: '#94a3b8',
-            fontSize: '0.85rem',
-            marginTop: '0.5rem'
-          }}>
-            {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
+          {(mode === 'register' || mode === 'reset') && (
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#22d3ee',
-                cursor: 'pointer',
-                fontWeight: 600,
-                textDecoration: 'underline'
+              onClick={() => {
+                setMode('login');
+                setError('');
               }}
+              className="auth-link"
             >
-              {isLogin ? 'Registrarse' : 'Iniciar Sesión'}
+              Volver a Iniciar Sesión
             </button>
-          </p>
-        </form>
-
-        {/* Botón cerrar */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            background: 'rgba(71, 85, 105, 0.2)',
-            border: 'none',
-            color: '#cbd5e1',
-            width: '2.5rem',
-            height: '2.5rem',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            fontSize: '1.25rem',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(71, 85, 105, 0.4)';
-            e.target.style.color = '#f1f5f9';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'rgba(71, 85, 105, 0.2)';
-            e.target.style.color = '#cbd5e1';
-          }}
-        >
-          ✕
-        </button>
+          )}
+        </div>
       </div>
     </div>
   );

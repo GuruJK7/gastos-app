@@ -1,42 +1,43 @@
 // src/firebase.js
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+// Firebase initialization with modular SDK (v9+)
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * CONFIGURACIÓN DE FIREBASE
- * Inicializa Firebase y exporta las instancias necesarias
- * ═══════════════════════════════════════════════════════════════
- */
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getAnalytics, isSupported } from 'firebase/analytics';
 
+// ── Step 1.9: read credentials from .env (never hardcode secrets) ──
 const firebaseConfig = {
-  apiKey: "AIzaSyD8E1oIK4dX_qA__-tyQkI_NQ2JjAP9HXg",
-  authDomain: "moneyadmin-d2b8c.firebaseapp.com",
-  projectId: "moneyadmin-d2b8c",
-  storageBucket: "moneyadmin-d2b8c.firebasestorage.app",
-  messagingSenderId: "514421288905",
-  appId: "1:514421288905:web:62834a4b750746950bc218",
-  measurementId: "G-SKYMNL2JN6",
+  apiKey:            process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain:        process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId:         process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket:     process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId:     process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-/**
- * Inicializar Firebase
- */
-const app = initializeApp(firebaseConfig);
-
-/**
- * Inicializar Analytics (solo en navegador)
- */
-let analytics;
-if (typeof window !== "undefined") {
-  analytics = getAnalytics(app);
+// Guard: catch missing env vars early in development
+if (!firebaseConfig.apiKey) {
+  throw new Error(
+    'Firebase API key is missing. Create a .env file based on .env.example'
+  );
 }
 
-/**
- * Exportar instancias de Firebase
- */
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-export { analytics };
+// Initialize Firebase only once to prevent duplicate app initialization
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Initialize Analytics only in production (not on localhost)
+if (!window.location.hostname.includes('localhost')) {
+  isSupported()
+    .then((supported) => { if (supported) getAnalytics(app); })
+    .catch(() => {});
+}
+
+export { app, auth, db, googleProvider };

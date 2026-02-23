@@ -19,7 +19,7 @@ import {
   getDocs,
   writeBatch,
 } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from '../../firebase';
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS

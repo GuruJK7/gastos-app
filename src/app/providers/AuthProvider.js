@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import {
   auth,
   googleProvider,
-} from '../firebase';
+} from '../../firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,

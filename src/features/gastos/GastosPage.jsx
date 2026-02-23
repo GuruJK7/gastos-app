@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useGastosContext } from '../contexts/GastosContext';
-import { useToast } from '../contexts/ToastContext';
+import { useGastosContext } from '../../app/providers/GastosProvider';
+import { useToast } from '../../app/providers/ToastProvider';
 import {
   validateGasto,
   getCategories,
   getPaymentMethods,
-} from '../services/validationService';
-import '../styles/GastosPage.css';
+} from './services/validationService';
+import './GastosPage.css';
 
 const CATEGORIES = getCategories();
 const PAY_METHODS = getPaymentMethods();

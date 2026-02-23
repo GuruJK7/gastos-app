@@ -6,14 +6,14 @@
 // useGastos() in isolation and creates a duplicate listener.
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from './AuthProvider';
 import {
   subscribeToGastos,
   addGastoToFirestore,
   updateGastoInFirestore,
   deleteGastoFromFirestore,
   deleteAllGastosForUser,
-} from '../services/firestoreService';
+} from '../../shared/services/firestoreService';
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 

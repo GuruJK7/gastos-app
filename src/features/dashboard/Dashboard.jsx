@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { useGastosContext } from '../contexts/GastosContext';
-import { useToast } from '../contexts/ToastContext';
+import { useGastosContext } from '../../app/providers/GastosProvider';
+import { useToast } from '../../app/providers/ToastProvider';
 import {
   validateGasto,
   getCategories,
   getPaymentMethods,
-} from '../services/validationService';
-import '../styles/Dashboard.css';
+} from '../gastos/services/validationService';
+import { Card, CardContent, CardHeader, CardTitle } from '../../shared/ui/ui/card';
+import './Dashboard.css';
 
 /* ─── Category metadata ───────────────────────────────────────────────────── */
 const CATEGORY_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -40,12 +41,12 @@ const HeroStat = ({ label, value, colorClass, badge }) => (
   </div>
 );
 
-const MetricCard = ({ accent, label, value, footer, progress }) => (
-  <div className="metric-card" style={{ '--metric-accent': accent }}>
-    <div className="metric-body">
-      <span className="metric-label">{label}</span>
-      <div className="metric-value">{value}</div>
-      {footer && <div className="metric-footer">{footer}</div>}
+const MetricCard = ({ accent, accentColor, label, value, footer, progress }) => (
+  <Card variant="accent" className="metric-card-premium" style={{ '--metric-accent': accent, '--card-accent': accentColor }}>
+    <CardContent className="metric-card-body">
+      <span className="metric-label-premium">{label}</span>
+      <div className="metric-value-premium">{value}</div>
+      {footer && <div className="metric-footer-premium">{footer}</div>}
       {progress !== undefined && (
         <div className="metric-progress">
           <div
@@ -54,8 +55,8 @@ const MetricCard = ({ accent, label, value, footer, progress }) => (
           />
         </div>
       )}
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 );
 
 const ActivityItem = ({ gasto, index }) => (
@@ -177,50 +178,55 @@ const Dashboard = ({ setActiveView }) => {
   const remainingBudget = BUDGET - totalGastado;
 
   return (
-    <div className="dashboard">
+    <div className="dashboard dashboard-premium">
 
       {/* ── HERO ── */}
-      <div className="dashboard-hero">
-        <div className="dashboard-hero-left">
-          <span className="dashboard-hero-label">Balance total gastado</span>
-          <span className={`dashboard-hero-value${totalGastado > BUDGET ? ' negative' : ''}`}>
-            {fmt(totalGastado)}
-          </span>
-          <span className="dashboard-hero-sub">
-            {gastos.length} transacciones · {diasUnicos} días activos
-          </span>
-        </div>
-        <div className="dashboard-hero-right">
-          <HeroStat
-            label="Ingresos"
-            value={fmt(BUDGET)}
-            colorClass="income"
-            badge={{ dir: 'up', text: 'Presupuesto' }}
-          />
-          <HeroStat
-            label="Disponible"
-            value={fmt(remainingBudget)}
-            colorClass={remainingBudget < 0 ? 'expense' : 'income'}
-          />
-        </div>
-      </div>
+      <Card variant="accent" className="dashboard-hero-card" style={{ '--card-accent': 'var(--violet-500, #8b5cf6)' }}>
+        <CardContent className="dashboard-hero-inner">
+          <div className="dashboard-hero-left">
+            <span className="dashboard-hero-label">Balance total gastado</span>
+            <span className={`dashboard-hero-value${totalGastado > BUDGET ? ' negative' : ''}`}>
+              {fmt(totalGastado)}
+            </span>
+            <span className="dashboard-hero-sub">
+              {gastos.length} transacciones · {diasUnicos} días activos
+            </span>
+          </div>
+          <div className="dashboard-hero-right">
+            <HeroStat
+              label="Ingresos"
+              value={fmt(BUDGET)}
+              colorClass="income"
+              badge={{ dir: 'up', text: 'Presupuesto' }}
+            />
+            <HeroStat
+              label="Disponible"
+              value={fmt(remainingBudget)}
+              colorClass={remainingBudget < 0 ? 'expense' : 'income'}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── SECONDARY METRICS ── */}
-      <div className="dashboard-metrics">
+      <div className="dashboard-metrics-premium">
         <MetricCard
-          accent="var(--accent)"
+          accent="var(--violet-500, #8b5cf6)"
+          accentColor="var(--violet-500, #8b5cf6)"
           label="Gasto hoy"
           value={fmt(totalHoy)}
           footer={`${gastosHoy.length} transacción${gastosHoy.length !== 1 ? 'es' : ''}`}
         />
         <MetricCard
-          accent="var(--warning)"
+          accent="var(--blue-500, #3b82f6)"
+          accentColor="var(--blue-500, #3b82f6)"
           label="Promedio diario"
           value={fmt(promedioDiario)}
           footer={`en ${diasUnicos} día${diasUnicos !== 1 ? 's' : ''}`}
         />
         <MetricCard
-          accent={budgetPct > 100 ? 'var(--danger)' : 'var(--success)'}
+          accent={budgetPct > 100 ? 'var(--danger)' : 'var(--green-500, #22c55e)'}
+          accentColor={budgetPct > 100 ? 'var(--danger)' : 'var(--green-500, #22c55e)'}
           label="Presupuesto mensual"
           value={`${Math.min(budgetPct, 100).toFixed(0)}%`}
           footer={budgetPct > 100 ? `Excedido en ${fmt(totalGastado - BUDGET)}` : `Quedan ${fmt(remainingBudget)}`}
@@ -229,17 +235,17 @@ const Dashboard = ({ setActiveView }) => {
       </div>
 
       {/* ── CONTENT GRID ── */}
-      <div className="dashboard-content-grid">
+      <div className="dashboard-content-grid-premium">
 
         {/* Activity panel */}
-        <div className="dash-panel">
-          <div className="dash-panel-header">
-            <h3>Actividad reciente</h3>
+        <Card className="dash-panel-premium" style={{ '--card-accent': 'var(--blue-500, #3b82f6)' }}>
+          <CardHeader className="dash-panel-header-premium">
+            <CardTitle>Actividad reciente</CardTitle>
             <button className="dash-panel-action" onClick={() => setActiveView('gastos')}>
               Ver todo →
             </button>
-          </div>
-          <div className="dash-panel-body">
+          </CardHeader>
+          <CardContent className="dash-panel-body-premium">
             {ultimosGastos.length > 0 ? (
               <div className="activity-list">
                 {ultimosGastos.map((gasto, i) => (
@@ -253,18 +259,18 @@ const Dashboard = ({ setActiveView }) => {
                 <span className="empty-state-body">Registra tu primer gasto para empezar.</span>
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Category breakdown panel */}
-        <div className="dash-panel">
-          <div className="dash-panel-header">
-            <h3>Por categoría</h3>
+        <Card className="dash-panel-premium" style={{ '--card-accent': 'var(--green-500, #22c55e)' }}>
+          <CardHeader className="dash-panel-header-premium">
+            <CardTitle>Por categoría</CardTitle>
             <button className="dash-panel-action" onClick={() => setActiveView('estadisticas')}>
               Detalle →
             </button>
-          </div>
-          <div className="dash-panel-body">
+          </CardHeader>
+          <CardContent className="dash-panel-body-premium">
             {topCategorias.length > 0 ? (
               <div className="category-list">
                 {topCategorias.map(([cat, monto], i) => (
@@ -283,8 +289,8 @@ const Dashboard = ({ setActiveView }) => {
                 <span className="empty-state-title">Sin datos de categorías</span>
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
       </div>
 

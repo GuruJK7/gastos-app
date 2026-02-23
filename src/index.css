@@ -1,82 +1,8 @@
 /* ─── Typeface ────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ─── Design Tokens ───────────────────────────────────────────────────────── */
-:root {
-  /* Surfaces */
-  --surface-0: #0b1120;
-  --surface-1: #111827;
-  --surface-2: #1a2235;
-  --surface-3: #1f2a3d;
-  --surface-4: #263348;
-
-  /* Borders */
-  --border-subtle:  rgba(255, 255, 255, 0.05);
-  --border-default: rgba(255, 255, 255, 0.09);
-  --border-strong:  rgba(255, 255, 255, 0.15);
-
-  /* Text */
-  --text-primary:   #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted:     #475569;
-  --text-disabled:  #334155;
-  --text-on-accent: #ffffff;
-
-  /* Accent — indigo (Stripe/Linear palette) */
-  --accent:         #6366f1;
-  --accent-hover:   #818cf8;
-  --accent-light:   rgba(99, 102, 241, 0.12);
-  --accent-border:  rgba(99, 102, 241, 0.25);
-
-  /* Semantic */
-  --success:        #10b981;
-  --success-light:  rgba(16, 185, 129, 0.12);
-  --warning:        #f59e0b;
-  --warning-light:  rgba(245, 158, 11, 0.12);
-  --danger:         #ef4444;
-  --danger-light:   rgba(239, 68, 68, 0.12);
-
-  /* Spacing — 8 px base */
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 28px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* Radius */
-  --radius-sm:  6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-
-  /* Elevation shadows — refined for dark surfaces */
-  --shadow-xs:       0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-overlay:  0 8px 32px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
-
-  /* Type scale */
-  --text-xs:   0.75rem;
-  --text-sm:  0.875rem;
-  --text-base:    1rem;
-  --text-lg:  1.125rem;
-  --text-xl:   1.25rem;
-  --text-2xl:   1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl:  2.25rem;
-
-  /* Transitions */
-  --transition-micro: 80ms ease;
-  --transition-fast:  120ms ease;
-  --transition-base:  180ms ease;
-  --transition-slow:  320ms cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* ─── Theme tokens ────────────────────────────────────────────────────────── */
+@import './styles/theme.css';
 
 /* ─── Base Reset ──────────────────────────────────────────────────────────── */
 *, *::before, *::after {
@@ -95,9 +21,32 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--surface-0);
+  text-rendering: optimizeLegibility;
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.10), transparent),
+    radial-gradient(ellipse 60% 40% at 80%  0%, rgba(59, 130, 246, 0.07), transparent),
+    radial-gradient(ellipse 50% 35% at 20% 10%, rgba(16, 185, 129, 0.05), transparent);
+  background-attachment: fixed;
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  min-height: 100vh;
+}
+
+/* ─── Typography helpers ──────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+
+p, span, label {
+  color: var(--text-secondary);
+}
+
+small {
+  color: var(--text-muted);
 }
 
 code {
@@ -108,9 +57,26 @@ button {
   font-family: inherit;
 }
 
+/* ─── Links ───────────────────────────────────────────────────────────────── */
+a {
+  color: var(--violet-400);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--violet-200);
+}
+
+/* ─── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(139, 92, 246, 0.25);
+  color: var(--text-primary);
+}
+
 /* ─── Focus ring ──────────────────────────────────────────────────────────── */
 *:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--violet-500);
   outline-offset: 2px;
 }
 
@@ -118,7 +84,7 @@ button {
 ::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
 /* ─── Reduced motion ──────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { useGastosContext } from '../contexts/GastosContext';
+import { useGastosContext } from '../../app/providers/GastosProvider';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   Area, AreaChart
 } from 'recharts';
-import '../styles/Estadisticas.css';
+import './Estadisticas.css';
 
 const EstadisticasPage = () => {
   const { gastos } = useGastosContext();

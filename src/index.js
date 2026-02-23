@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './app/App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import { AuthProvider } from './contexts/AuthContext';
-import { ToastProvider } from './contexts/ToastContext';
-import { GastosProvider } from './contexts/GastosContext';
+import { AuthProvider } from './app/providers/AuthProvider';
+import { ToastProvider } from './app/providers/ToastProvider';
+import { GastosProvider } from './app/providers/GastosProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

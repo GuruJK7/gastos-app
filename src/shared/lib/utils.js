@@ -1,12 +1,10 @@
 import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
 
 /**
- * Utility function to merge Tailwind classes
- * Handles conflicts intelligently
+ * Utility function to merge class names
  */
 export function cn(...inputs) {
-  return twMerge(clsx(inputs));
+  return clsx(inputs);
 }
 
 /**

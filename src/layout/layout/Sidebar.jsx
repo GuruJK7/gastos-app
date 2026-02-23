@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import '../../styles/Sidebar.css';
+import { useAuth } from '../../app/providers/AuthProvider';
+import '../Sidebar.css';
 
 const Sidebar = ({ activeView, setActiveView, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { user, logout } = useAuth();

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './App.css';
-import { useGastosContext } from './contexts/GastosContext';
-import { useAuth } from './contexts/AuthContext';
-import AppLayout from './components/layout/AppLayout';
-import Dashboard from './pages/Dashboard';
-import GastosPage from './pages/GastosPage';
-import EstadisticasPage from './pages/EstadisticasPage';
+import { useGastosContext } from './providers/GastosProvider';
+import { useAuth } from './providers/AuthProvider';
+import AppLayout from '../layout/layout/AppLayout';
+import Dashboard from '../features/dashboard/Dashboard';
+import GastosPage from '../features/gastos/GastosPage';
+import EstadisticasPage from '../features/estadisticas/EstadisticasPage';
 
 function App() {
   const { loading, error } = useGastosContext();

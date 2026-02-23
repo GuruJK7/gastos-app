@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
-import '../../styles/AppLayout.css';
+import '../AppLayout.css';
 
 const AppLayout = ({ children, activeView, setActiveView }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

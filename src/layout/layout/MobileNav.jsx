@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/MobileNav.css';
+import '../MobileNav.css';
 
 const MobileNav = ({ activeView, setActiveView }) => {
   const navItems = [

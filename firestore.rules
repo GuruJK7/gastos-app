@@ -7,81 +7,170 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ─── Helper ────────────────────────────────────────────────
-    function isOwner(uid) {
-      return request.auth != null && request.auth.uid == uid;
+    // ── Helpers ──────────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // FLAT COLLECTION: gastos  (legacy – still in use by useGastos)
-    // ═══════════════════════════════════════════════════════════
+    function isOwner() {
+      return isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    function isCreatingOwnDoc() {
+      return isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    function onlyAllowedKeys(allowed) {
+      return request.resource.data.keys().hasOnly(allowed);
+    }
+
+    // ── Gastos ───────────────────────────────────────────────────────────
+    // Fields: userId, amount, category, paymentMethod, note?, date, createdAt?
+
+    function validGastoKeys() {
+      return onlyAllowedKeys(['userId','amount','date','category','paymentMethod','note','createdAt']);
+    }
+
+    function validGastoCreate() {
+      let d = request.resource.data;
+      return validGastoKeys() &&
+        d.userId == request.auth.uid &&
+        d.amount is number && d.amount > 0 &&
+        d.date is string && d.date.size() >= 10 &&
+        d.category is string && d.category.size() > 0 &&
+        d.paymentMethod is string && d.paymentMethod.size() > 0 &&
+        (!('note' in d) || d.note is string) &&
+        (!('createdAt' in d) || d.createdAt is string);
+    }
+
+    function validGastoUpdate() {
+      let d = request.resource.data;
+      return validGastoKeys() &&
+        // userId cannot be changed
+        d.userId == resource.data.userId &&
+        // validate types when present
+        d.amount is number && d.amount > 0 &&
+        d.date is string && d.date.size() >= 10 &&
+        d.category is string && d.category.size() > 0 &&
+        d.paymentMethod is string && d.paymentMethod.size() > 0 &&
+        (!('note' in d) || d.note is string) &&
+        (!('createdAt' in d) || d.createdAt is string);
+    }
+
     match /gastos/{gastoId} {
-
-      // Read only own documents (query must include where('userId','==',uid))
-      allow read: if request.auth != null &&
-                     resource.data.userId == request.auth.uid;
-
-      allow create: if request.auth != null &&
-                       request.resource.data.userId == request.auth.uid &&
-                       request.resource.data.monto is number &&
-                       request.resource.data.monto > 0 &&
-                       request.resource.data.fecha != null &&
-                       request.resource.data.categoria is string &&
-                       request.resource.data.categoria.size() > 0 &&
-                       request.resource.data.metodoPago is string &&
-                       request.resource.data.metodoPago.size() > 0;
-
-      allow update: if request.auth != null &&
-                       resource.data.userId == request.auth.uid &&
-                       request.resource.data.userId == request.auth.uid &&
-                       request.resource.data.monto is number &&
-                       request.resource.data.monto > 0;
-
-      allow delete: if request.auth != null &&
-                       resource.data.userId == request.auth.uid;
+      // get = single doc, list = collection query
+      allow get:    if isOwner();
+      allow list:   if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow create: if isCreatingOwnDoc() && validGastoCreate();
+      allow update: if isOwner()          && validGastoUpdate();
+      allow delete: if isOwner();
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // USER SUBCOLLECTIONS  users/{uid}/...
-    // ═══════════════════════════════════════════════════════════
-    match /users/{uid} {
+    // ── Inversiones ──────────────────────────────────────────────────────
+    // Fields: userId, name, amount, returnPct?, date, createdAt?
 
-      // ── accounts ─────────────────────────────────────────────
-      match /accounts/{accountId} {
-        allow read:   if isOwner(uid);
-
-        allow create: if isOwner(uid) &&
-                         request.resource.data.name is string &&
-                         request.resource.data.name.size() > 0 &&
-                         request.resource.data.currentBalance is number &&
-                         request.resource.data.initialBalance is number;
-
-        // Balance updates come through runTransaction (accountService / transactionService)
-        allow update: if isOwner(uid) &&
-                         request.resource.data.name is string &&
-                         request.resource.data.currentBalance is number;
-
-        allow delete: if isOwner(uid);
-      }
-
-      // ── transactions ─────────────────────────────────────────
-      match /transactions/{txId} {
-        allow read:   if isOwner(uid);
-
-        allow create: if isOwner(uid) &&
-                         request.resource.data.amount is number &&
-                         request.resource.data.amount > 0 &&
-                         request.resource.data.type is string &&
-                         request.resource.data.accountId is string;
-
-        // Transactions are immutable after creation — no update allowed.
-        allow update: if false;
-
-        allow delete: if isOwner(uid);
-      }
+    function validInvKeys() {
+      return onlyAllowedKeys(['userId','name','amount','returnPct','date','createdAt']);
     }
 
-    // ── Deny everything else ─────────────────────────────────
+    function validInvCreate() {
+      let d = request.resource.data;
+      return validInvKeys() &&
+        d.userId == request.auth.uid &&
+        d.name is string && d.name.size() > 0 &&
+        d.amount is number && d.amount > 0 &&
+        d.date is string && d.date.size() >= 10 &&
+        (!('returnPct' in d) || d.returnPct is number) &&
+        (!('createdAt' in d) || d.createdAt is string);
+    }
+
+    function validInvUpdate() {
+      let d = request.resource.data;
+      return validInvKeys() &&
+        d.userId == resource.data.userId &&
+        d.name is string && d.name.size() > 0 &&
+        d.amount is number && d.amount > 0 &&
+        d.date is string && d.date.size() >= 10 &&
+        (!('returnPct' in d) || d.returnPct is number) &&
+        (!('createdAt' in d) || d.createdAt is string);
+    }
+
+    match /inversiones/{invId} {
+      allow get:    if isOwner();
+      allow list:   if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow create: if isCreatingOwnDoc() && validInvCreate();
+      allow update: if isOwner()          && validInvUpdate();
+      allow delete: if isOwner();
+    }
+
+    // ── Presupuestos ─────────────────────────────────────────────────────
+    // Fields: userId, month, amount, createdAt?, updatedAt?
+    // Doc ID format: ${userId}_${YYYY-MM}
+
+    function validPresupuestoKeys() {
+      return onlyAllowedKeys(['userId','month','amount','createdAt','updatedAt']);
+    }
+
+    function validPresupuestoWrite() {
+      let d = request.resource.data;
+      return validPresupuestoKeys() &&
+        d.userId == request.auth.uid &&
+        d.month is string && d.month.size() == 7 &&
+        d.amount is number && d.amount > 0 &&
+        (!('createdAt' in d) || d.createdAt is string) &&
+        (!('updatedAt' in d) || d.updatedAt is string);
+    }
+
+    match /presupuestos/{presupuestoId} {
+      allow get:    if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list:   if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow create: if isSignedIn() && validPresupuestoWrite();
+      // setDoc with merge triggers update if doc exists
+      allow update: if isOwner()    && validPresupuestoWrite();
+      allow delete: if isOwner();
+    }
+
+    // ── Ingresos ─────────────────────────────────────────────────────────
+    // Fields: userId, monto, fecha, categoria?, nota?, createdAt?, updatedAt?
+
+    function validIngresoKeys() {
+      return onlyAllowedKeys(['userId','monto','fecha','categoria','nota','createdAt','updatedAt']);
+    }
+
+    function validIngresoCreate() {
+      let d = request.resource.data;
+      return validIngresoKeys() &&
+        d.userId == request.auth.uid &&
+        d.monto is number && d.monto > 0 &&
+        d.fecha is string && d.fecha.size() >= 10 &&
+        (!('categoria' in d) || (d.categoria is string && d.categoria.size() > 0)) &&
+        (!('nota' in d) || d.nota is string) &&
+        (!('createdAt' in d) || d.createdAt is string) &&
+        (!('updatedAt' in d) || d.updatedAt is string);
+    }
+
+    function validIngresoUpdate() {
+      let d = request.resource.data;
+      return validIngresoKeys() &&
+        d.userId == resource.data.userId &&
+        d.monto is number && d.monto > 0 &&
+        d.fecha is string && d.fecha.size() >= 10 &&
+        (!('categoria' in d) || (d.categoria is string && d.categoria.size() > 0)) &&
+        (!('nota' in d) || d.nota is string) &&
+        (!('createdAt' in d) || d.createdAt is string) &&
+        (!('updatedAt' in d) || d.updatedAt is string);
+    }
+
+    match /ingresos/{ingresoId} {
+      allow get:    if isOwner();
+      allow list:   if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow create: if isCreatingOwnDoc() && validIngresoCreate();
+      allow update: if isOwner()          && validIngresoUpdate();
+      allow delete: if isOwner();
+    }
+
+    // ── Deny everything else ─────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }

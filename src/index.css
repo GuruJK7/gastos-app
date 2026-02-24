@@ -1,8 +1,88 @@
-/* ─── Typeface ────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import './styles/globals.css';
 
-/* ─── Theme tokens ────────────────────────────────────────────────────────── */
-@import './styles/theme.css';
+/* ─── Design System Tokens ────────────────────────────────────────────────── */
+:root {
+  /* ── Background layers ── */
+  --bg-base:         #07080a;
+  --bg-surface:      #0d0e12;
+  --bg-elevated:     #141519;
+  --bg-panel:        rgba(255, 255, 255, 0.025);
+
+  /* ── Glass effect ── */
+  --glass-bg:        rgba(255, 255, 255, 0.035);
+  --glass-bg-hover:  rgba(255, 255, 255, 0.055);
+  --glass-blur:      16px;
+  --glass-border:    rgba(255, 255, 255, 0.07);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07),
+                     inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+  --glass-shadow:    0 2px 4px rgba(0, 0, 0, 0.20),
+                     0 8px 24px rgba(0, 0, 0, 0.18),
+                     0 0 0 0.5px rgba(255, 255, 255, 0.04);
+  --glass-glow:      0 0 20px rgba(140, 160, 200, 0.04);
+
+  /* ── Text ── */
+  --text-primary:    #f0f1f4;
+  --text-secondary:  #8b8fa3;
+  --text-muted:      #4e5263;
+  --text-inverse:    #07080a;
+
+  /* ── Borders ── */
+  --border-default:  rgba(255, 255, 255, 0.07);
+  --border-hover:    rgba(255, 255, 255, 0.12);
+  --border-active:   rgba(255, 255, 255, 0.18);
+
+  /* ── Accent (cyan/teal — matches dashboard) ── */
+  --accent-50:       #ecfeff;
+  --accent-200:      #a5f3fc;
+  --accent-400:      #22d3ee;
+  --accent-500:      #06b6d4;
+  --accent-600:      #0891b2;
+  --accent:          #22d3ee;
+  --accent-muted:    rgba(34, 211, 238, 0.12);
+  --accent-glow:     0 0 20px rgba(34, 211, 238, 0.15);
+
+  /* ── Semantic ── */
+  --success:         #4ade80;
+  --success-muted:   rgba(74, 222, 128, 0.12);
+  --danger:          #f87171;
+  --danger-muted:    rgba(248, 113, 113, 0.12);
+  --warning:         #fbbf24;
+  --warning-muted:   rgba(251, 191, 36, 0.12);
+  --info:            #60a5fa;
+  --info-muted:      rgba(96, 165, 250, 0.12);
+
+  /* ── Legacy violet (kept for links/focus) ── */
+  --violet-200:      #c4b5fd;
+  --violet-400:      #a78bfa;
+  --violet-500:      #8b5cf6;
+
+  /* ── Radii ── */
+  --radius-xs:       0.25rem;
+  --radius-sm:       0.375rem;
+  --radius-md:       0.5rem;
+  --radius-lg:       0.75rem;
+  --radius-xl:       1rem;
+  --radius-2xl:      1.25rem;
+
+  /* ── Spacing (reference only — use values directly) ── */
+  /* 4px grid: 0.25  0.5  0.75  1  1.25  1.5  2  2.5  3  4  5  6  8 rem */
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* ── Sidebar ── */
+  --sidebar-width:   240px;
+  --sidebar-collapsed: 64px;
+
+  /* ── Z-index layers ── */
+  --z-sidebar:       100;
+  --z-header:        200;
+  --z-modal:         500;
+  --z-toast:         9999;
+}
 
 /* ─── Base Reset ──────────────────────────────────────────────────────────── */
 *, *::before, *::after {
@@ -18,15 +98,16 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   background: var(--bg-base);
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.10), transparent),
-    radial-gradient(ellipse 60% 40% at 80%  0%, rgba(59, 130, 246, 0.07), transparent),
-    radial-gradient(ellipse 50% 35% at 20% 10%, rgba(16, 185, 129, 0.05), transparent);
+    radial-gradient(ellipse 90% 60% at 50% -30%, rgba(6, 182, 212, 0.07), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 85%  -5%, rgba(99, 102, 241, 0.05), transparent 65%),
+    radial-gradient(ellipse 60% 45% at 15%   5%, rgba(16, 185, 129, 0.035), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50%  80%, rgba(6, 182, 212, 0.025), transparent 55%);
   background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
@@ -34,57 +115,28 @@ body {
   min-height: 100vh;
 }
 
-/* ─── Typography helpers ──────────────────────────────────────────────────── */
+/* ─── Typography ──────────────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
   line-height: 1.3;
   letter-spacing: -0.025em;
 }
 
-p, span, label {
-  color: var(--text-secondary);
-}
-
-small {
-  color: var(--text-muted);
-}
+p, span, label { color: var(--text-secondary); }
+small          { color: var(--text-muted); }
 
 code {
   font-family: 'SF Mono', source-code-pro, Menlo, Monaco, Consolas, monospace;
 }
 
-button {
-  font-family: inherit;
-}
+button { font-family: inherit; }
 
 /* ─── Links ───────────────────────────────────────────────────────────────── */
 a {
   color: var(--violet-400);
   text-decoration: none;
-  transition: color var(--transition-fast);
 }
-
-a:hover {
-  color: var(--violet-200);
-}
-
-/* ─── Selection ───────────────────────────────────────────────────────────── */
-::selection {
-  background: rgba(139, 92, 246, 0.25);
-  color: var(--text-primary);
-}
-
-/* ─── Focus ring ──────────────────────────────────────────────────────────── */
-*:focus-visible {
-  outline: 2px solid var(--violet-500);
-  outline-offset: 2px;
-}
-
-/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
-::-webkit-scrollbar        { width: 6px; height: 6px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+a:hover { color: var(--violet-200); }
 
 /* ─── Reduced motion ──────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -93,4 +145,117 @@ a:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ─── Toast ───────────────────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toast {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  animation: toast-in 0.3s ease;
+}
+
+.toast--info    { background: #1e3a5f; color: #93c5fd; }
+.toast--success { background: #14532d; color: #86efac; }
+.toast--error   { background: #7f1d1d; color: #fca5a5; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(1rem); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Glass Card System ───────────────────────────────────────────────────── */
+
+/* Base glass panel — use on any card, widget, or container */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-highlight), var(--glass-shadow), var(--glass-glow);
+  transition: border-color var(--transition-base),
+              background var(--transition-base),
+              box-shadow var(--transition-base);
+}
+
+.glass:hover {
+  border-color: var(--border-hover);
+  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-highlight),
+              var(--glass-shadow),
+              0 0 28px rgba(140, 160, 200, 0.06);
+}
+
+/* Elevated variant — sidebar, modals */
+.glass-elevated {
+  background: rgba(13, 14, 18, 0.85);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-highlight),
+              0 4px 24px rgba(0, 0, 0, 0.35),
+              0 1px 2px rgba(0, 0, 0, 0.25),
+              0 0 0 0.5px rgba(255, 255, 255, 0.05);
+}
+
+/* Subtle variant — inner sections, nested panels */
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Accent-bordered glass — active/selected state */
+.glass-accent {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-highlight),
+              var(--glass-shadow),
+              0 0 24px rgba(34, 211, 238, 0.07),
+              inset 0 0 12px rgba(34, 211, 238, 0.03);
+}
+
+/* ─── Semantic Badge Utilities ────────────────────────────────────────────── */
+
+.badge-success {
+  background: var(--success-muted);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-danger {
+  background: var(--danger-muted);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-accent {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
 }

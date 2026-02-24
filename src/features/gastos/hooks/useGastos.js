@@ -1,110 +1,86 @@
-// src/hooks/useGastos.js
-import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+// src/features/gastos/hooks/useGastos.js
+// ─── Gastos CRUD Hook ────────────────────────────────────────────────────
+import { useState, useEffect, useCallback } from 'react';
+import { useAuthStore } from '../../../store/auth.store';
 import {
-  subscribeToGastos,
-  addGastoToFirestore,
-  updateGastoInFirestore,
-  deleteGastoFromFirestore,
-  deleteAllGastosForUser,
-} from '../services/firestoreService';
+  listGastos,
+  createGasto as createGastoSvc,
+  deleteGasto as deleteGastoSvc,
+} from '../services/gastos.service';
 
 /**
- * useGastos
- *
- * Owns React state for the gastos collection.
- * All Firestore I/O is delegated to firestoreService — this hook
- * never imports `db` directly.
+ * Manages gastos state: fetch, create, delete with loading/error.
+ * @returns {{ gastos: import('../types').Gasto[], loading: boolean, error: string|null, submitting: boolean, create: (draft: object) => Promise<void>, remove: (gastoId: string) => Promise<void>, refresh: () => Promise<void> }}
  */
-export const useGastos = () => {
-  const { user: authUser, isAuthInitialized } = useAuth();
-  const [gastos, setGastos]   = useState([]);
+export function useGastos() {
+  const { user } = useAuthStore();
+  const userId = user?.uid;
+
+  const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // ─── Real-time subscription ───────────────────────────────────
-  useEffect(() => {
-    if (!isAuthInitialized) {
-      setLoading(true);
-      return;
-    }
-
-    if (!authUser) {
-      // Auth is ready but no user — nothing to subscribe to.
-      setGastos([]);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
+  const fetch = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     setError(null);
+    try {
+      const data = await listGastos(userId);
+      setGastos(data);
+    } catch (err) {
+      setError(err?.message || 'Error al cargar gastos');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
-    const unsubscribe = subscribeToGastos(
-      authUser.uid,
-      (data) => {
-        setGastos(data);
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        if (err.code === 'permission-denied') {
-          setError('Sin permisos para acceder a los gastos. Verifica las reglas de Firestore.');
-        } else if (err.code === 'failed-precondition') {
-          setError('Firestore no está configurado correctamente. Verifica las reglas.');
-        } else {
-          setError(null);
-        }
-        setLoading(false);
-      }
-    );
+  useEffect(() => {
+    let cancelled = false;
+    if (userId) {
+      setLoading(true);
+      setError(null);
+      listGastos(userId)
+        .then((data) => { if (!cancelled) setGastos(data); })
+        .catch((err) => { if (!cancelled) setError(err?.message || 'Error al cargar gastos'); })
+        .finally(() => { if (!cancelled) setLoading(false); });
+    }
+    return () => { cancelled = true; };
+  }, [userId]);
 
-    return () => unsubscribe();
-  }, [authUser, isAuthInitialized]);
+  const create = useCallback(async (draft) => {
+    if (!userId) throw new Error('Usuario no autenticado');
+    if (!draft.amount || !draft.category || !draft.date || !draft.paymentMethod) {
+      throw new Error('Faltan campos requeridos');
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const created = await createGastoSvc({
+        ...draft,
+        currency: draft.currency || 'USD',
+        exchangeRate: draft.exchangeRate || 1,
+        userId,
+      });
+      setGastos((prev) => [created, ...prev]);
+    } catch (err) {
+      setError(err?.message || 'Error al crear gasto');
+      throw err;
+    } finally {
+      setSubmitting(false);
+    }
+  }, [userId]);
 
-  // ─── Mutations ────────────────────────────────────────────────
+  const remove = useCallback(async (gastoId) => {
+    if (!gastoId) return;
+    setError(null);
+    try {
+      await deleteGastoSvc(gastoId);
+      setGastos((prev) => prev.filter((g) => g.id !== gastoId));
+    } catch (err) {
+      setError(err?.message || 'Error al eliminar gasto');
+    }
+  }, []);
 
-  const addGasto = async (nuevoGasto) => {
-    if (!authUser) throw new Error('Usuario no autenticado');
-    const id = await addGastoToFirestore(authUser.uid, nuevoGasto);
-    return { id, ...nuevoGasto };
-  };
-
-  const updateGasto = async (gastoId, datosActualizados) => {
-    if (!authUser) throw new Error('Usuario no autenticado');
-    await updateGastoInFirestore(gastoId, datosActualizados);
-  };
-
-  const deleteGasto = async (gastoId) => {
-    if (!authUser) throw new Error('Usuario no autenticado');
-    await deleteGastoFromFirestore(gastoId);
-    // Optimistic local removal — onSnapshot will confirm.
-    setGastos((prev) => prev.filter((g) => g.id !== gastoId));
-  };
-
-  const clearAllGastos = async () => {
-    if (!authUser) throw new Error('Usuario no autenticado');
-    await deleteAllGastosForUser(authUser.uid);
-    setGastos([]);
-  };
-
-  return {
-    gastos,
-    loading,
-    error,
-    user: authUser
-      ? {
-          id: authUser.uid,
-          firstName:
-            authUser.displayName?.split(' ')[0] ||
-            (authUser.isAnonymous ? 'Usuario' : 'Admin'),
-          email: authUser.email || 'anonymous',
-          isAnonymous: authUser.isAnonymous,
-        }
-      : null,
-    addGasto,
-    updateGasto,
-    deleteGasto,
-    clearAllGastos,
-  };
-};
+  return { gastos, loading, error, submitting, create, remove, refresh: fetch };
+}

@@ -1,0 +1,121 @@
+/* ─── Global Polish ─ src/styles/globals.css ──────────────────────────────── */
+
+/* ── Text rendering ── */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variant-ligatures: common-ligatures;
+}
+
+/* ── Smoother scrollbar ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Selection color ── */
+::selection {
+  background: rgba(34, 211, 238, 0.18);
+  color: var(--text-primary);
+  -webkit-text-fill-color: var(--text-primary);
+}
+
+::-moz-selection {
+  background: rgba(34, 211, 238, 0.18);
+  color: var(--text-primary);
+}
+
+/* ── Focus ring ── */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 1.5px solid rgba(34, 211, 238, 0.5);
+  outline-offset: 2px;
+  border-radius: inherit;
+  transition: outline-color 0.15s ease,
+              outline-offset 0.15s ease;
+}
+
+*:focus-visible:active {
+  outline-offset: 1px;
+}
+
+/* ── Default subtle transitions ── */
+a,
+button,
+input,
+textarea,
+select,
+[role="button"] {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 0.15s;
+  transition-timing-function: ease;
+}
+
+img,
+svg {
+  transition: opacity 0.2s ease;
+}
+
+/* ── Smooth placeholder text ── */
+::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+:focus::placeholder {
+  opacity: 0.35;
+}
+
+/* ── Pointer refinements ── */
+button,
+[role="button"],
+summary {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+  pointer-events: none;
+}

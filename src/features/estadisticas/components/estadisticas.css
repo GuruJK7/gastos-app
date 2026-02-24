@@ -1,0 +1,327 @@
+/* ─── Estadísticas Components ──────────────────────────────────────────── */
+
+/* ── Shared ── */
+.est-section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.est-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* ── TendenciaChart ── */
+.tendencia-wrap {
+  position: relative;
+}
+
+.tendencia-svg {
+  width: 100%;
+  display: block;
+}
+
+.tendencia-tooltip {
+  position: absolute;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+  background: rgba(7, 8, 10, 0.92);
+  border: 1px solid var(--glass-border);
+  padding: 0.375rem 0.625rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+.tendencia-tooltip__day {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.tendencia-tooltip__value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-400);
+  line-height: 1.2;
+}
+
+/* ── ResumenCard ── */
+.resumen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.resumen__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.resumen__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+}
+
+.resumen__subtitle {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+.resumen__pill {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumen__pill--positive {
+  background: var(--success-muted);
+  color: var(--success);
+}
+
+.resumen__pill--negative {
+  background: var(--danger-muted);
+  color: var(--danger);
+}
+
+.resumen__balance-section {
+  margin-bottom: 1.5rem;
+}
+
+.resumen__balance-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 0.375rem;
+}
+
+.resumen__balance-value {
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumen__balance-value--positive {
+  color: var(--success);
+}
+
+.resumen__balance-value--negative {
+  color: var(--danger);
+}
+
+.resumen__divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 1.25rem;
+}
+
+.resumen__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.resumen__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resumen__row-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.resumen__row-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumen__row-value--positive {
+  color: var(--success);
+}
+
+.resumen__row-value--negative {
+  color: var(--danger);
+}
+
+.resumen__row-value--expense {
+  color: var(--danger);
+}
+
+/* ── DistribucionDonut ── */
+.donut__layout {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.donut__chart-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.donut__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donut__center-pct {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.donut__center-cat {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  max-width: 72px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.donut__center-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.donut__center-total {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 0.125rem;
+}
+
+/* Legend */
+.donut__legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  list-style: none;
+}
+
+.donut__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  cursor: default;
+  transition: opacity 0.2s ease;
+}
+
+.donut__legend-item--dimmed {
+  opacity: 0.25;
+}
+
+.donut__legend-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.donut__legend-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.donut__legend-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ── IngresosVsGastosChart ── */
+.ivg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.ivg-header .est-section-title {
+  margin-bottom: 0;
+}
+
+.ivg-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ivg-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.ivg-legend__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.ivg-legend__dot--ingresos {
+  background: #4ade80;
+}
+
+.ivg-legend__dot--gastos {
+  background: #fb923c;
+}
+
+.ivg-tooltip__row {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+.ivg-tooltip__row--ingresos {
+  color: var(--success);
+}
+
+.ivg-tooltip__row--gastos {
+  color: var(--danger);
+}
